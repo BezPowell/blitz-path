@@ -1,4 +1,6 @@
 # blitz-path
+![Rust](https://github.com/BezPowell/blitz-path/workflows/Rust/badge.svg)
+
 Source for my experiments in implementing various pathfinding algorithms in rust. Currently in a very wip state. It relies on the [movingai-rust](https://github.com/THeK3nger/movingai-rust) crate for map implementation and testing / benchmarks.
 
 ## Usage
