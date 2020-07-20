@@ -1,8 +1,12 @@
+use std::collections::BinaryHeap;
+
 use movingai::Coords2D;
 use movingai::Map2D;
 use movingai::MovingAiMap;
 
+use super::utils::{distance, unwind};
 use crate::node::Node;
+use crate::Route;
 
 #[derive(Copy, Clone)]
 enum Direction {
@@ -11,7 +15,75 @@ enum Direction {
     Diagonal(i32, i32),
 }
 
-pub fn check_jump(
+///Creates a new route using the JPS algorithm.
+///Returns a Route struct containing the distance to the goal and number of steps needed to get there.
+pub fn jps_path(map: &MovingAiMap, start: Coords2D, goal: Coords2D) -> Option<Route> {
+    //Initialize open and closed lists
+    let mut open = BinaryHeap::new();
+    let mut closed = Vec::<Node>::new();
+
+    //Push start node to open list
+    let start_node = Node::new(0.0, distance(start, goal), start, start);
+    if start == goal {
+        open.push(start_node);
+    } else {
+        //Add start's neighbours to open list
+        for neighbour in map.neighbors(start) {
+            let node = Node::from_parent(&start_node, neighbour, goal);
+            open.push(node);
+        }
+
+        closed.push(start_node);
+    }
+
+    //Examine the nodes
+    while let Some(node_current) = open.pop() {
+        //If this is the target node return the distance to get there
+        if node_current.position == goal {
+            //Push all remaining to closed
+            for node in open {
+                closed.push(node);
+            }
+
+            //Unwind
+            let path = unwind(&node_current, &closed);
+            let route = Route::from((node_current.g, path));
+            return Some(route);
+        }
+
+        //Check if node is on closed list and continue if is
+        if closed.contains(&node_current) {
+            continue;
+        }
+
+        //Calculate direction - needs cleaning
+        let mut direction_x = node_current.position.0 as i32 - node_current.parent.0 as i32;
+        let mut direction_y = node_current.position.1 as i32 - node_current.parent.1 as i32;
+        if direction_x < 0 {
+            direction_x = -1;
+        } else if direction_x > 0 {
+            direction_x = 1;
+        }
+        if direction_y < 0 {
+            direction_y = -1;
+        } else if direction_y > 0 {
+            direction_y = 1;
+        }
+
+        if let Some(nodes) = check_jump(&node_current, map, (direction_x, direction_y), goal) {
+            for node in nodes {
+                open.push(node);
+            }
+        }
+
+        //Push current node to closed list
+        closed.push(node_current);
+    }
+
+    None
+}
+
+fn check_jump(
     parent: &Node,
     map: &MovingAiMap,
     direction: (i32, i32),

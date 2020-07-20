@@ -5,7 +5,7 @@ mod tests {
     use movingai::parser::parse_map_file;
     use movingai::parser::parse_scen_file;
 
-    use blitz_path::Route;
+    use blitz_path::{a_star_path, jps_path};
 
     enum Algorithm {
         AStar,
@@ -19,8 +19,8 @@ mod tests {
 
         for (i, scene) in scenes.iter().enumerate() {
             let path = match algorithm {
-                Algorithm::AStar => Route::a_star_path(&map, scene.start_pos, scene.goal_pos),
-                Algorithm::JPS => Route::jps_path(&map, scene.start_pos, scene.goal_pos),
+                Algorithm::AStar => a_star_path(&map, scene.start_pos, scene.goal_pos),
+                Algorithm::JPS => jps_path(&map, scene.start_pos, scene.goal_pos),
             };
 
             match path {
