@@ -27,10 +27,17 @@ pub fn jps_path(map: &MovingAiMap, start: Coords2D, goal: Coords2D) -> Option<Ro
     if start == goal {
         open.push(start_node);
     } else {
-        //Add start's neighbours to open list
-        for neighbour in map.neighbors(start) {
-            let node = Node::from_parent(&start_node, neighbour, goal);
-            open.push(node);
+        //Add start's neighbours to open list - modified as seems to be error in neighbours function
+        let prev_x = start_node.position.0 - 1;
+        let next_x = start_node.position.0 + 1;
+        let prev_y = start_node.position.1 - 1;
+        let next_y = start_node.position.1 + 1;
+        for x in prev_x..=next_x {
+            for y in prev_y..=next_y {
+                let coords = Coords2D::from((x, y));
+                let node = Node::from_parent(&start_node, coords, goal);
+                open.push(node);
+            }
         }
 
         closed.push(start_node);
