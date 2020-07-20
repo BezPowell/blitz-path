@@ -4,7 +4,7 @@ use movingai::Coords2D;
 use movingai::Map2D;
 use movingai::MovingAiMap;
 
-use super::utils::{distance, unwind};
+use super::utils::{direction, distance, unwind};
 use crate::node::Node;
 use crate::Route;
 
@@ -56,21 +56,10 @@ pub fn jps_path(map: &MovingAiMap, start: Coords2D, goal: Coords2D) -> Option<Ro
             continue;
         }
 
-        //Calculate direction - needs cleaning
-        let mut direction_x = node_current.position.0 as i32 - node_current.parent.0 as i32;
-        let mut direction_y = node_current.position.1 as i32 - node_current.parent.1 as i32;
-        if direction_x < 0 {
-            direction_x = -1;
-        } else if direction_x > 0 {
-            direction_x = 1;
-        }
-        if direction_y < 0 {
-            direction_y = -1;
-        } else if direction_y > 0 {
-            direction_y = 1;
-        }
+        //Calculate direction
+        let direction = direction(node_current.position, node_current.parent);
 
-        if let Some(nodes) = check_jump(&node_current, map, (direction_x, direction_y), goal) {
+        if let Some(nodes) = check_jump(&node_current, map, (direction.0, direction.1), goal) {
             for node in nodes {
                 open.push(node);
             }

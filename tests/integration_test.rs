@@ -31,26 +31,26 @@ mod tests {
                     //panic!("Test failed at scen #{}", i);
                     errors.push(format!("Test #{} found no path", i));
                 }
-                _ => {}
+                Some(path) => {
+                    for num in 0..path.steps().len() - 1 {
+                        //Test wheter the x or y diustance between any adjacent steps is more than 1
+                        let direction_x =
+                            path.steps()[num + 1].0 as i32 - path.steps()[num].0 as i32;
+                        let direction_y =
+                            path.steps()[num + 1].1 as i32 - path.steps()[num].1 as i32;
+                        if direction_x < -1
+                            || direction_x > 1
+                            || direction_y < -1
+                            || direction_y > 1
+                        {
+                            errors.push(format!("Test #{} did not unwind correctly", i))
+                        }
+                    }
+                }
             }
         }
 
         errors
-    }
-
-    fn test_steps(map: &str, scen: &str) -> Vec<(usize, usize)> {
-        let mut steps = Vec::new();
-        let map = parse_map_file(Path::new(map)).unwrap();
-        let scenes = parse_scen_file(Path::new(scen)).unwrap();
-
-        for scene in scenes.iter().skip(34).take(1) {
-            let astar_path = a_star_path(&map, scene.start_pos, scene.goal_pos).unwrap();
-            let jps_path = jps_path(&map, scene.start_pos, scene.goal_pos).unwrap();
-
-            steps.push((astar_path.steps().len(), jps_path.steps().len()));
-        }
-
-        steps
     }
 
     #[test]
@@ -73,13 +73,5 @@ mod tests {
             "The following tests failed:\n{:?}",
             errors
         );
-    }
-
-    #[test]
-    fn jps_steps() {
-        let tests = test_steps(MAP, SCEN);
-        for test in tests {
-            assert_eq!(test.0, test.1);
-        }
     }
 }
