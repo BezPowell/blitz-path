@@ -4,8 +4,8 @@ use movingai::Coords2D;
 use movingai::Map2D;
 use movingai::MovingAiMap;
 
-use super::utils::{distance, unwind};
 use crate::node::Node;
+use crate::utils::{distance, rewind};
 use crate::Route;
 
 ///Creates a new route using the A* algorithm.
@@ -28,7 +28,7 @@ pub fn a_star_path(map: &MovingAiMap, start: Coords2D, goal: Coords2D) -> Option
     while let Some(node_current) = open.pop() {
         //If this is the target node return the distance to get there
         if node_current.position == goal {
-            let path = unwind(&node_current, &closed);
+            let path = rewind(&node_current, &closed);
             let route = Route::from((node_current.g, path));
             return Some(route);
         }

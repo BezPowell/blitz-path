@@ -1,7 +1,7 @@
 use movingai::Coords2D;
 use std::cmp::Ordering;
 
-use super::utils::distance;
+use crate::utils::distance;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Node {

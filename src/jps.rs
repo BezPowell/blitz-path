@@ -4,8 +4,8 @@ use movingai::Coords2D;
 use movingai::Map2D;
 use movingai::MovingAiMap;
 
-use super::utils::{direction, distance, unwind};
 use crate::node::Node;
+use crate::utils::{direction, distance, rewind};
 use crate::Route;
 
 #[derive(Copy, Clone)]
@@ -53,7 +53,7 @@ pub fn jps_path(map: &MovingAiMap, start: Coords2D, goal: Coords2D) -> Option<Ro
             }
 
             //Unwind
-            let path = unwind(&node_current, &closed);
+            let path = rewind(&node_current, &closed);
             let route = Route::from((node_current.g, path));
             return Some(route);
         }
