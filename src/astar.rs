@@ -10,6 +10,19 @@ use crate::Route;
 
 ///Creates a new route using the A* algorithm.
 ///Returns a Route struct containing the distance to the goal and number of steps needed to get there.
+/// # Example
+///
+/// ```
+/// let map = movingai::parser::parse_map_file(Path::new("path")).unwrap();
+/// let scenes = movingai::parser::parse_scen_file(Path::new("path")).unwrap();
+/// let scene = scenes[index];
+///
+/// let path = blitz_path::a_star_path(&map, scene.start_pos, scene.goal_pos);
+///
+/// // using as f32 as scene.optimal_length is stored as f64,
+/// // but only seems to have precision to f32
+/// assert_eq!(scene.optimal_length as f32, path.distance() as f32);
+/// ```
 pub fn a_star_path(map: &MovingAiMap, start: Coords2D, goal: Coords2D) -> Option<Route> {
     //Initialize open and closed lists
     let mut open = BinaryHeap::new();

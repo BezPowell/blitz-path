@@ -2,7 +2,7 @@ use std::convert::From;
 
 use movingai::Coords2D;
 
-///Describes a route between to points.
+///Describes a route between two points.
 ///Giving the total distance needed to travel and a vector of each step needed.
 pub struct Route {
     distance: f64,
