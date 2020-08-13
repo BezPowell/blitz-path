@@ -12,3 +12,14 @@ readme = "README.md"
 
 [dependencies]
 movingai = "1.1"
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "a_star"
+harness = false
+
+[[bench]]
+name = "jps"
+harness = false
