@@ -2,7 +2,7 @@
 authors = ["BezPowell <bez.powell@protonmail.com>"]
 edition = "2018"
 name = "blitz-path"
-version = "0.1.0"
+version = "0.1.1"
 description = "Implementations of the A* and JPS pathfinding algorithms."
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/BezPowell/blitz-path"
