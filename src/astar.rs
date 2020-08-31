@@ -2,7 +2,6 @@ use std::collections::BinaryHeap;
 
 use movingai::Coords2D;
 use movingai::Map2D;
-use movingai::MovingAiMap;
 
 use crate::node::Node;
 use crate::utils::{distance, rewind};
@@ -28,7 +27,7 @@ use crate::Route;
 /// }
 /// ```
 
-pub fn a_star_path(map: &MovingAiMap, start: Coords2D, goal: Coords2D) -> Option<Route> {
+pub fn a_star_path<U, T: Map2D<U>>(map: &T, start: Coords2D, goal: Coords2D) -> Option<Route> {
     //Initialize open and closed lists
     let mut open = BinaryHeap::new();
     let mut closed = Vec::<Node>::new();

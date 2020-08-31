@@ -29,8 +29,8 @@ mod tests {
         for index in tests {
             let scene = &scen[index];
             let path = match algorithm {
-                Algorithm::AStar => a_star_path(&map, scene.start_pos, scene.goal_pos),
-                Algorithm::JPS => jps_path(&map, scene.start_pos, scene.goal_pos),
+                Algorithm::AStar => a_star_path(map, scene.start_pos, scene.goal_pos),
+                Algorithm::JPS => jps_path(map, scene.start_pos, scene.goal_pos),
             };
 
             match path {

@@ -2,7 +2,6 @@ use std::collections::BinaryHeap;
 
 use movingai::Coords2D;
 use movingai::Map2D;
-use movingai::MovingAiMap;
 
 use crate::node::Node;
 use crate::utils::{direction, distance, rewind};
@@ -35,7 +34,7 @@ enum Direction {
 /// }
 /// ```
 
-pub fn jps_path(map: &MovingAiMap, start: Coords2D, goal: Coords2D) -> Option<Route> {
+pub fn jps_path<U, T: Map2D<U>>(map: &T, start: Coords2D, goal: Coords2D) -> Option<Route> {
     //Initialize open and closed lists
     let mut open = BinaryHeap::new();
     let mut closed = Vec::<Node>::new();
@@ -97,9 +96,9 @@ pub fn jps_path(map: &MovingAiMap, start: Coords2D, goal: Coords2D) -> Option<Ro
     None
 }
 
-fn check_jump(
+fn check_jump<U, T: Map2D<U>>(
     parent: &Node,
-    map: &MovingAiMap,
+    map: &T,
     direction: (i32, i32),
     goal: Coords2D,
 ) -> Option<Vec<Node>> {
@@ -125,8 +124,8 @@ fn check_jump(
     }
 }
 
-fn forced_horizontal(
-    map: &MovingAiMap,
+fn forced_horizontal<U, T: Map2D<U>>(
+    map: &T,
     check_node: &Node,
     direction: i32,
     goal: Coords2D,
@@ -162,8 +161,8 @@ fn forced_horizontal(
     }
 }
 
-fn forced_vertical(
-    map: &MovingAiMap,
+fn forced_vertical<U, T: Map2D<U>>(
+    map: &T,
     check_node: &Node,
     direction: i32,
     goal: Coords2D,
@@ -199,8 +198,8 @@ fn forced_vertical(
     }
 }
 
-fn expand(
-    map: &MovingAiMap,
+fn expand<U, T: Map2D<U>>(
+    map: &T,
     start_node: &Node,
     direction: Direction,
     goal: Coords2D,

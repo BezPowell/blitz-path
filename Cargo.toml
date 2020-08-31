@@ -17,9 +17,8 @@ movingai = "1.1"
 criterion = "0.3"
 
 [[bench]]
-name = "a_star"
+name = "maze512-32-9"
 harness = false
 
-[[bench]]
-name = "jps"
-harness = false
+[profile.bench]
+lto = "fat"
