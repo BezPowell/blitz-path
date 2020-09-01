@@ -34,40 +34,40 @@ enum Direction {
 /// }
 /// ```
 
+#[inline]
 pub fn jps_path<U, T: Map2D<U>>(map: &T, start: Coords2D, goal: Coords2D) -> Option<Route> {
-    //Initialize open and closed lists
-    let mut open = BinaryHeap::new();
-    let mut closed = Vec::<Node>::new();
+    if start == goal {
+        return Some(Route::from((0.0, vec![])));
+    }
 
     //Push start node to open list
     let start_node = Node::new(0.0, distance(start, goal), start, start);
-    if start == goal {
-        open.push(start_node);
-    } else {
-        //Add start's neighbours to open list - modified as seems to be error in neighbours function
-        let prev_x = start_node.position.0 - 1;
-        let next_x = start_node.position.0 + 1;
-        let prev_y = start_node.position.1 - 1;
-        let next_y = start_node.position.1 + 1;
-        for x in prev_x..=next_x {
-            for y in prev_y..=next_y {
-                let coords = Coords2D::from((x, y));
-                let node = Node::from_parent(&start_node, coords, goal);
-                open.push(node);
-            }
-        }
 
-        closed.push(start_node);
+    //Add start's neighbours to open list - modified as seems to be error in neighbours function
+    let prev_x = start_node.position.0 - 1;
+    let next_x = start_node.position.0 + 1;
+    let prev_y = start_node.position.1 - 1;
+    let next_y = start_node.position.1 + 1;
+
+    //Initialize open and closed lists
+    let capacity = (1 + next_x - prev_x) * (1 + next_y - prev_y);
+    let mut open = BinaryHeap::with_capacity(capacity);
+    let mut closed = Vec::with_capacity(capacity);
+
+    for x in prev_x..=next_x {
+        for y in prev_y..=next_y {
+            open.push(Node::from_parent(&start_node, (x, y), goal));
+        }
     }
+
+    closed.push(start_node);
 
     //Examine the nodes
     while let Some(node_current) = open.pop() {
         //If this is the target node return the distance to get there
         if node_current.position == goal {
             //Push all remaining to closed
-            for node in open {
-                closed.push(node);
-            }
+            closed.append(&mut open.into_vec());
 
             //Unwind
             let path = rewind(&node_current, &closed);
@@ -83,7 +83,7 @@ pub fn jps_path<U, T: Map2D<U>>(map: &T, start: Coords2D, goal: Coords2D) -> Opt
         //Calculate direction
         let direction = direction(node_current.position, node_current.parent);
 
-        if let Some(nodes) = check_jump(&node_current, map, (direction.0, direction.1), goal) {
+        if let Some(nodes) = check_jump(&node_current, map, direction, goal) {
             for node in nodes {
                 open.push(node);
             }
@@ -96,108 +96,75 @@ pub fn jps_path<U, T: Map2D<U>>(map: &T, start: Coords2D, goal: Coords2D) -> Opt
     None
 }
 
+#[inline]
 fn check_jump<U, T: Map2D<U>>(
     parent: &Node,
     map: &T,
-    direction: (i32, i32),
+    (dx, dy): (i32, i32),
     goal: Coords2D,
 ) -> Option<Vec<Node>> {
-    //println!("Checking: {:?}", parent.position);
-    //Expand depending on direction
-    //Diagonal case
-    let dir = if direction.0 != 0 && direction.1 != 0 {
-        Direction::Diagonal(direction.0, direction.1)
-    }
-    //Horizontal case
-    else if direction.0 != 0 {
-        Direction::Horizontal(direction.0)
-    }
-    //Vertical
-    else {
-        Direction::Vertical(direction.1)
-    };
-
-    if let Some(nodes) = expand(map, &parent, dir, goal) {
-        Some(nodes)
+    if dx != 0 {
+        if dy != 0 {
+            expand(map, &parent, Direction::Diagonal(dx, dy), goal)
+        } else {
+            expand(map, &parent, Direction::Horizontal(dx), goal)
+        }
+    } else if dy != 0 {
+        expand(map, &parent, Direction::Vertical(dy), goal)
     } else {
         None
     }
 }
 
+#[inline]
 fn forced_horizontal<U, T: Map2D<U>>(
+    nodes: &mut Vec<Node>,
     map: &T,
     check_node: &Node,
     direction: i32,
     goal: Coords2D,
-) -> Option<Vec<Node>> {
-    let next_x = (check_node.position.0 as i32 + direction) as usize;
-    let up_y = (check_node.position.1 as i32 - 1) as usize;
-    let down_y = (check_node.position.1 as i32 + 1) as usize;
-
-    let mut nodes = Vec::new();
+) {
+    let (check_x, check_y) = check_node.position;
+    let next_x = (check_x as i32 + direction) as usize;
+    let up_y = (check_y as i32 - 1) as usize;
+    let down_y = (check_y as i32 + 1) as usize;
 
     //Check if blocked up
-    if (!map.is_traversable(Coords2D::from((check_node.position.0, up_y))))
-        && (map.is_traversable(Coords2D::from((next_x, up_y))))
-    {
-        let jump_point = Coords2D::from((next_x, up_y));
-        let jump_node = Node::from_parent(&check_node, jump_point, goal);
-        nodes.push(jump_node);
+    if !map.is_traversable((check_x, up_y)) && map.is_traversable((next_x, up_y)) {
+        nodes.push(Node::from_parent(&check_node, (next_x, up_y), goal));
     }
 
     //Check if blocked down
-    if (!map.is_traversable(Coords2D::from((check_node.position.0, down_y))))
-        && (map.is_traversable(Coords2D::from((next_x, down_y))))
-    {
-        let jump_point = Coords2D::from((next_x, down_y));
-        let jump_node = Node::from_parent(&check_node, jump_point, goal);
-        nodes.push(jump_node);
-    }
-
-    if !nodes.is_empty() {
-        Some(nodes)
-    } else {
-        None
+    if !map.is_traversable((check_x, down_y)) && map.is_traversable((next_x, down_y)) {
+        nodes.push(Node::from_parent(&check_node, (next_x, down_y), goal));
     }
 }
 
+#[inline]
 fn forced_vertical<U, T: Map2D<U>>(
+    nodes: &mut Vec<Node>,
     map: &T,
     check_node: &Node,
     direction: i32,
     goal: Coords2D,
-) -> Option<Vec<Node>> {
-    let next_y = (check_node.position.1 as i32 + direction) as usize;
-    let left_x = (check_node.position.0 as i32 - 1) as usize;
-    let right_x = (check_node.position.0 as i32 + 1) as usize;
-
-    let mut nodes = Vec::new();
+) {
+    let (check_x, check_y) = check_node.position;
+    let left_x = (check_x as i32 - 1) as usize;
+    let right_x = (check_x as i32 + 1) as usize;
+    let next_y = (check_y as i32 + direction) as usize;
 
     //Check if blocked left
-    if (!map.is_traversable(Coords2D::from((left_x, check_node.position.1))))
-        && (map.is_traversable(Coords2D::from((left_x, next_y))))
-    {
-        let jump_point = Coords2D::from((left_x, next_y));
-        let jump_node = Node::from_parent(&check_node, jump_point, goal);
-        nodes.push(jump_node);
+    if !map.is_traversable((left_x, check_y)) && map.is_traversable((left_x, next_y)) {
+        nodes.push(Node::from_parent(&check_node, (left_x, next_y), goal));
     }
 
     //Check if blocked right
-    if (!map.is_traversable(Coords2D::from((right_x, check_node.position.1))))
-        && (map.is_traversable(Coords2D::from((right_x, next_y))))
-    {
-        let jump_point = Coords2D::from((right_x, next_y));
-        let jump_node = Node::from_parent(&check_node, jump_point, goal);
-        nodes.push(jump_node);
-    }
-
-    if !nodes.is_empty() {
-        Some(nodes)
-    } else {
-        None
+    if !map.is_traversable((right_x, check_y)) && map.is_traversable((right_x, next_y)) {
+        nodes.push(Node::from_parent(&check_node, (right_x, next_y), goal));
     }
 }
 
+#[inline]
 fn expand<U, T: Map2D<U>>(
     map: &T,
     start_node: &Node,
@@ -220,24 +187,20 @@ fn expand<U, T: Map2D<U>>(
         }
 
         //Otherwise Expand depending on direction
-        let dir;
-        match direction {
+        let dir = match direction {
             Direction::Vertical(vert) => {
-                dir = (0, vert);
                 //Check for forced neighbours
-                if let Some(mut vert_nodes) = forced_vertical(map, &current, vert, goal) {
-                    nodes.append(&mut vert_nodes);
-                }
+                forced_vertical(&mut nodes, map, &current, vert, goal);
+
+                (0, vert)
             }
             Direction::Horizontal(hor) => {
-                dir = (hor, 0);
                 //Check for forced neighbours
-                if let Some(mut hor_nodes) = forced_horizontal(map, &current, hor, goal) {
-                    nodes.append(&mut hor_nodes);
-                }
+                forced_horizontal(&mut nodes, map, &current, hor, goal);
+
+                (hor, 0)
             }
             Direction::Diagonal(hor, vert) => {
-                dir = (hor, vert);
                 //Expand horizontally
                 if let Some(mut hor_nodes) = expand(map, &current, Direction::Horizontal(hor), goal)
                 {
@@ -248,12 +211,14 @@ fn expand<U, T: Map2D<U>>(
                 {
                     nodes.append(&mut vert_nodes);
                 }
+
+                (hor, vert)
             }
-        }
+        };
 
         let next_x = (current.position.0 as i32 + dir.0) as usize;
         let next_y = (current.position.1 as i32 + dir.1) as usize;
-        let next_position = Coords2D::from((next_x, next_y));
+        let next_position = (next_x, next_y);
 
         //If forced neighbours found return them along with this node and next on to continue checking in this direction
         if !nodes.is_empty() {
