@@ -28,9 +28,14 @@ use crate::Route;
 /// ```
 
 pub fn a_star_path<U, T: Map2D<U>>(map: &T, start: Coords2D, goal: Coords2D) -> Option<Route> {
+    if start == goal {
+        return Some(Route::from((0.0, vec![])));
+    }
+
     //Initialize open and closed lists
-    let mut open = BinaryHeap::new();
-    let mut closed = Vec::<Node>::new();
+    let capacity = (1 + start.0 + 1 - start.0 - 1) * (1 + start.1 + 1 - start.1 - 1);
+    let mut open = BinaryHeap::with_capacity(capacity);
+    let mut closed = Vec::<Node>::with_capacity(capacity);
 
     //Push start node to open list
     open.push(Node {

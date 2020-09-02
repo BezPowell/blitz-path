@@ -43,7 +43,8 @@ pub fn jps_path<U, T: Map2D<U>>(map: &T, start: Coords2D, goal: Coords2D) -> Opt
     //Push start node to open list
     let start_node = Node::new(0.0, distance(start, goal), start, start);
 
-    //Add start's neighbours to open list - modified as seems to be error in neighbours function
+    //Add start's neighbours to open list, needs to add all surrounds as JPS relies on cutting corners
+    //and 8 directions of movement.
     let prev_x = start_node.position.0 - 1;
     let next_x = start_node.position.0 + 1;
     let prev_y = start_node.position.1 - 1;
