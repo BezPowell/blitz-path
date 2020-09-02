@@ -12,10 +12,11 @@ use crate::Route;
 /// # Examples
 ///
 /// ```
+/// # use std::io;
 /// use std::path::Path;
 ///
-/// let map = movingai::parser::parse_map_file(Path::new("./tests/map/maze512-32-9.map")).expect("Could not load map.");
-/// let scenes = movingai::parser::parse_scen_file(Path::new("./tests/map/maze512-32-9.map.scen")).expect("Could not load scenario.");
+/// let map = movingai::parser::parse_map_file(Path::new("./tests/map/maze512-32-9.map"))?;
+/// let scenes = movingai::parser::parse_scen_file(Path::new("./tests/map/maze512-32-9.map.scen"))?;
 /// let scene = &scenes[0];
 ///
 /// let path = blitz_path::a_star_path(&map, scene.start_pos, scene.goal_pos);
@@ -25,6 +26,7 @@ use crate::Route;
 /// if let Some(path) = path {
 ///     assert_eq!(scene.optimal_length as f32, path.distance() as f32);  
 /// }
+/// # Ok::<(), io::Error>(())
 /// ```
 
 pub fn a_star_path<U, T: Map2D<U>>(map: &T, start: Coords2D, goal: Coords2D) -> Option<Route> {
