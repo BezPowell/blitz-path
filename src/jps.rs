@@ -4,7 +4,7 @@ use movingai::Coords2D;
 use movingai::Map2D;
 
 use crate::node::Node;
-use crate::utils::{direction, distance, rewind};
+use crate::utils::{direction, distance, rewind_jps};
 use crate::Route;
 
 #[derive(Copy, Clone)]
@@ -73,7 +73,7 @@ pub fn jps_path<U, T: Map2D<U>>(map: &T, start: Coords2D, goal: Coords2D) -> Opt
             closed.append(&mut open.into_vec());
 
             //Unwind
-            let path = rewind(&node_current, &closed);
+            let path = rewind_jps(&node_current, &closed);
             let route = Route::from((node_current.g, path));
             return Some(route);
         }

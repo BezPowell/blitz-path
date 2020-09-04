@@ -9,7 +9,7 @@ pub fn distance(a: Coords2D, b: Coords2D) -> f64 {
 }
 
 //Helper function to recreate path once goal is located
-pub fn rewind(start: &Node, closed: &Vec<Node>) -> Vec<Coords2D> {
+pub fn rewind_jps(start: &Node, closed: &Vec<Node>) -> Vec<Coords2D> {
     let mut path = Vec::with_capacity(closed.len().pow(2) + 1);
 
     path.push(start.position);
@@ -30,6 +30,26 @@ pub fn rewind(start: &Node, closed: &Vec<Node>) -> Vec<Coords2D> {
             }
 
             //Push actual steps
+            parent = step.parent;
+            node = step.position;
+            path.push(node);
+        }
+    }
+
+    path
+}
+
+//Helper function to recreate path once goal is located
+pub fn rewind(start: &Node, closed: &Vec<Node>) -> Vec<Coords2D> {
+    let mut path = Vec::with_capacity(closed.len() + 1);
+
+    path.push(start.position);
+
+    let mut parent = start.parent;
+    let mut node = start.position;
+
+    while parent != node {
+        if let Some(step) = closed.iter().find(|x| x.position == parent) {
             parent = step.parent;
             node = step.position;
             path.push(node);
